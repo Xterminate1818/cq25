@@ -24,7 +24,7 @@ def update_node_dict():
     for hop in hops:
         
         if last_distance + 1 != hop.distance:
-            print('Some gateways are not responding')
+            continue
         else:
 
             if hop.address not in nodeDict:
