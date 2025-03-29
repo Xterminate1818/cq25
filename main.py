@@ -46,7 +46,7 @@ def update_node_dict():
 
 def update_hostname_node_dict(ip_address, host_name):
     hostnameNodeDict = dict(nodeDict)
-    hostnameNodeDict[ip_address, host_name]
+    hostnameNodeDict[host_name] = hostnameNodeDict.pop(ip_address)
     return hostnameNodeDict
 
 
@@ -69,3 +69,4 @@ if __name__ == "__main__":
                 continue
 
 
+print(hostnameNodeDict)
