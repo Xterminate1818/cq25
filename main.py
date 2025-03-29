@@ -2,21 +2,6 @@ from icmplib import traceroute
 import socket
 
 nodeDict = {}
-running = True
-while(running):
-
-    
-    correctInput = False
-    while(not correctInput):
-        keepGoing = ""
-        keepGoing = input("Input Another?(y/N)").lower()
-        if(keepGoing == "n"):
-            correctInput = True
-            running = False
-        elif(keepGoing == "y"):
-            correctInput = True
-        else:
-            continue
 
 def update_node_dict():
     destination = input("Enter a website: ")
@@ -40,6 +25,26 @@ def update_node_dict():
         last_distance = hop.distance
     return nodeDict
 
+if __name__ == "__main__":
+    running = True
+    while(running):
+
+        update_node_dict()
+
+        correctInput = False
+        while(not correctInput):
+            keepGoing = ""
+            keepGoing = input("Input Another?(y/N)").lower()
+            if(keepGoing == "n"):
+                correctInput = True
+                running = False
+            elif(keepGoing == "y"):
+                correctInput = True
+            else:
+                continue
 
 
-print(nodeDict)
+
+
+
+    print(nodeDict)
