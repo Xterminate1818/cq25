@@ -12,8 +12,9 @@
 }
 </style>
 
-<script src="https://cdn.jsdelivr.net/npm/elkjs@0.9.3/lib/elk.bundled.js"> </script>
 <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"> </script>
+<script src="./cytoscape-euler.js""> </script>
+
 <script>
 async function draw_graph() {
   const json_url = "./graph.json";
@@ -34,7 +35,7 @@ async function draw_graph() {
           'text-valign':'center',
           'width': 'label',
           'height':'label',
-          'shape':'square',
+          'shape':'ellipse',
           'text-wrap': 'wrap'
         }
       },
@@ -51,7 +52,9 @@ async function draw_graph() {
         }
       }
     ],
-
+    layout: {
+      name: 'dagre',
+    }
   });
 }
 draw_graph();
