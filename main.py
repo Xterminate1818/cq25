@@ -11,10 +11,13 @@ def update_node_dict():
         hops = traceroute(destination)
     except NameLookupError:
         print("Name Look Up Error... try another website T_T")
+        return
     except SocketPermissionError:
         print("Please run with elevated privileges!")
+        exit
     except:
-        print("Unknown error conducting traceroute @_@")
+        print("Unknown error conducting traceroute @_@ Try again?")
+        return
 
     last_distance = 0
     previousAddress = ""
