@@ -35,7 +35,6 @@ def update_node_dict():
             
             previousAddress = hop.address
             
-
             try:
                 name, alias, addresslist = socket.gethostbyaddr(hop.address)
                 update_hostname_node_dict(addresslist, name)
@@ -46,7 +45,7 @@ def update_node_dict():
     return nodeDict
 
 def update_hostname_node_dict(ip_address, host_name):
-    hostnameNodeDict = nodeDict
+    hostnameNodeDict = dict(nodeDict)
     hostnameNodeDict[ip_address, host_name]
     return hostnameNodeDict
 
@@ -69,4 +68,8 @@ if __name__ == "__main__":
             else:
                 continue
 
-    print(nodeDict)
+print("Nodes\n")
+print(nodeDict)
+
+print("With Host Names \n")
+print(hostnameNodeDict)
