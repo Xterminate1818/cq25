@@ -4,17 +4,16 @@ from icmplib import traceroute, NameLookupError, SocketPermissionError
 import socket
 import json
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder = "./")
 
 if __name__ == "__main__":
     app.run(debug=False)
 
-@app.route("/")
-def hello_world():
+@app.route("/", methods = ['GET', 'POST'])
+def index():
+    return open("index.html").read()
 
-    return "<p>Hello, World!</p>"
-
-@app.route("/<request_name>", methods = ['GET', 'POST'])
+@app.route("/api/<request_name>", methods = ['GET', 'POST'])
 def getRoute(request_name):
     if request.method == 'GET':
         print(request_name)

@@ -3,12 +3,12 @@
 <head>
 <style>
 #cy {
-  position: absolute;
+  position: relative;
   left: 0;
   top: 0;
-  bottom: 0;
-  right: 0;
-  z-index: 10;
+  height: 100%;
+  width: 100%;
+  display: "block";
 }
 </style>
 
@@ -18,13 +18,8 @@
 <script src="https://unpkg.com/cose-base/cose-base.js"></script>
 <script src="https://unpkg.com/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>
 
-<script src="./cytoscape-euler.js"> </script>
-
 <script>
-async function draw_graph() {
-  const json_url = "./graph.json";
-  const response = await fetch(json_url);
-  const json = await response.json();
+async function draw_graph(json) {
   var cy = cytoscape({
     container: document.getElementById('cy'), // container to render in
     elements: json,
@@ -59,11 +54,32 @@ async function draw_graph() {
     }
   });
 }
-draw_graph();
 </script>
 </head>
 <body>
-<div id="cy"> </div>
+  <h1> Network Visualizer </h1>
+  <form id="url-form" style="z-index=10;">
+    <input type="text" name="url" id="input-field"> </input>
+    <input type="submit"> </input>
+  </form>
+  <div>
+    <div id="cy">
+    </div>
+  </div>
+  <script>
+  const form_element = document.getElementById("url-form");
+  const input_element = document.getElementById("input-field");
+  form_element.addEventListener("submit", async function(event) {
+    event.preventDefault();
+    let json_url = `/api/${input_element.value}`;
+    console.log(json_url);
+    const response = await fetch(json_url);
+    console.log(response);
+    const json = await response.json();
+    console.log(json);
+    draw_graph(json);
+  });
+  </script>
 </body>
 </html>
 
