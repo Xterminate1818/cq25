@@ -3,7 +3,6 @@ import socket
 
 
 nodeDict = {}
-hostnameNodeDict = {}
 
 def update_node_dict():
     destination = input("Enter a website: ")
@@ -27,27 +26,26 @@ def update_node_dict():
             continue
         else:
 
-            if hop.address not in nodeDict:
-                nodeDict[hop.address]= []
-
-            if previousAddress:
-                nodeDict[previousAddress].append(hop.address)
-            
-            previousAddress = hop.address
-            
             try:
                 name, alias, addresslist = socket.gethostbyaddr(hop.address)
-                update_hostname_node_dict(addresslist, name)
             except:
-                continue
-            
+                if hop.address not in nodeDict:
+                    nodeDict[hop.address]= []
+                
+                if previousAddress:
+                    nodeDict[previousAddress].append(hop.address)
+                    previousAddress = hop.address
+            else:
+                if name not in nodeDict:
+                    nodeDict[name]= []
+
+                if previousAddress:
+                    nodeDict[previousAddress].append(name)
+                    previousAddress = name
+                    
         last_distance = hop.distance
     return nodeDict
 
-def update_hostname_node_dict(ip_address, host_name):
-    hostnameNodeDict = dict(nodeDict)
-    hostnameNodeDict[host_name] = hostnameNodeDict.pop(ip_address)
-    return hostnameNodeDict
 
 
 if __name__ == "__main__":
