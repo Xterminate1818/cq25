@@ -43,6 +43,8 @@ def update_node_dict():
                     nodeDict[previousKey].append(name)
                 previousKey = name
 
+            
+
         last_distance = hop.distance
     return nodeDict
 
