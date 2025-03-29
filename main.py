@@ -34,14 +34,16 @@ def update_node_dict():
                 
                 if previousKey:
                     nodeDict[previousKey].append(hop.address)
-                    previousKey = hop.address
+                previousKey = hop.address
             else:
                 if name not in nodeDict:
                     nodeDict[name]= []
 
                 if previousKey:
                     nodeDict[previousKey].append(name)
-                    previousKey = name
+                previousKey = name
+
+            
 
         last_distance = hop.distance
     return nodeDict
