@@ -5,6 +5,20 @@ nodeDict = {}
 running = True
 while(running):
 
+    
+    correctInput = False
+    while(not correctInput):
+        keepGoing = ""
+        keepGoing = input("Input Another?(y/N)").lower()
+        if(keepGoing == "n"):
+            correctInput = True
+            running = False
+        elif(keepGoing == "y"):
+            correctInput = True
+        else:
+            continue
+
+def update_node_dict():
     destination = input("Enter a website: ")
     hops = traceroute(socket.gethostbyname(destination))
 
@@ -24,18 +38,7 @@ while(running):
             previousAddress = hop.address
 
         last_distance = hop.distance
-
-    correctInput = False
-    while(not correctInput):
-        keepGoing = ""
-        keepGoing = input("Input Another?(y/N)").lower()
-        if(keepGoing == "n"):
-            correctInput = True
-            running = False
-        elif(keepGoing == "y"):
-            correctInput = True
-        else:
-            continue
+    return nodeDict
 
 
 
