@@ -19,7 +19,7 @@ def update_node_dict():
         return
 
     last_distance = 0
-    previousAddress = ""
+    previousKey = ""
     for hop in hops:
         
         if last_distance + 1 != hop.distance:
@@ -32,17 +32,17 @@ def update_node_dict():
                 if hop.address not in nodeDict:
                     nodeDict[hop.address]= []
                 
-                if previousAddress:
-                    nodeDict[previousAddress].append(hop.address)
-                    previousAddress = hop.address
+                if previousKey:
+                    nodeDict[previousKey].append(hop.address)
+                    previousKey = hop.address
             else:
                 if name not in nodeDict:
                     nodeDict[name]= []
 
-                if previousAddress:
-                    nodeDict[previousAddress].append(name)
-                    previousAddress = name
-                    
+                if previousKey:
+                    nodeDict[previousKey].append(name)
+                    previousKey = name
+
         last_distance = hop.distance
     return nodeDict
 
@@ -65,6 +65,3 @@ if __name__ == "__main__":
                 correctInput = True
             else:
                 continue
-
-
-print(hostnameNodeDict)
