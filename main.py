@@ -68,8 +68,4 @@ if __name__ == "__main__":
             else:
                 continue
 
-print("Nodes\n")
-print(nodeDict)
 
-print("With Host Names \n")
-print(hostnameNodeDict)
