@@ -16,7 +16,7 @@ while(running):
         if last_distance + 1 != hop.distance:
             print('Some gateways are not responding')
         else:
-            if not nodeDict[hop.address]:
+            if hop.address not in nodeDict:
                 nodeDict[hop.address]= []
             
             if previousAddress:
