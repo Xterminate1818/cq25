@@ -2,9 +2,7 @@ from icmplib import traceroute, NameLookupError, SocketPermissionError
 import socket
 
 
-nodeDict = {}
-
-def update_node_dict():
+def update_node_dict(nodeDict):
     destination = input("Enter a website: ")
     try:
         hops = traceroute(destination)

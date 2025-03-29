@@ -13,7 +13,12 @@
 </style>
 
 <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"> </script>
-<script src="./cytoscape-euler.js""> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/core-js/2.5.7/shim.min.js"></script>
+<script src="https://unpkg.com/layout-base/layout-base.js"></script>
+<script src="https://unpkg.com/cose-base/cose-base.js"></script>
+<script src="https://unpkg.com/cytoscape-cose-bilkent/cytoscape-cose-bilkent.js"></script>
+
+<script src="./cytoscape-euler.js"> </script>
 
 <script>
 async function draw_graph() {
@@ -30,11 +35,8 @@ async function draw_graph() {
           'background-color': '#333',
           'color': '#fff',
           'padding': '2em',
-          'label': 'data(label)',
           'text-halign':'center',
           'text-valign':'center',
-          'width': 'label',
-          'height':'label',
           'shape':'ellipse',
           'text-wrap': 'wrap'
         }
@@ -43,7 +45,7 @@ async function draw_graph() {
       {
         selector: 'edge',
         style: {
-          'width': 4,
+          'width': 10,
           'line-color': '#ff0000',
           'target-arrow-color': '#ff0000',
           'edge-target-arrow-size': '8.0',
@@ -53,7 +55,7 @@ async function draw_graph() {
       }
     ],
     layout: {
-      name: 'dagre',
+      name: 'cose-bilkent',
     }
   });
 }

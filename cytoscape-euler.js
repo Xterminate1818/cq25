@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("dagre"));
+		module.exports = factory(require("cose-base"));
 	else if(typeof define === 'function' && define.amd)
-		define(["dagre"], factory);
+		define(["cose-base"], factory);
 	else if(typeof exports === 'object')
-		exports["cytoscapeDagre"] = factory(require("dagre"));
+		exports["cytoscapeCoseBilkent"] = factory(require("cose-base"));
 	else
-		root["cytoscapeDagre"] = factory(root["dagre"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE__4__) {
+		root["cytoscapeCoseBilkent"] = factory(root["coseBase"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_0__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -43,35 +43,18 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
 /******/ 		}
-/******/ 	};
-/******/
-/******/ 	// define __esModule on exports
-/******/ 	__webpack_require__.r = function(exports) {
-/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
-/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
-/******/ 		}
-/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
-/******/ 	};
-/******/
-/******/ 	// create a fake namespace object
-/******/ 	// mode & 1: value is a module id, require it
-/******/ 	// mode & 2: merge all properties of value into the ns
-/******/ 	// mode & 4: return value when already ns object
-/******/ 	// mode & 8|1: behave like require
-/******/ 	__webpack_require__.t = function(value, mode) {
-/******/ 		if(mode & 1) value = __webpack_require__(value);
-/******/ 		if(mode & 8) return value;
-/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
-/******/ 		var ns = Object.create(null);
-/******/ 		__webpack_require__.r(ns);
-/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
-/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
-/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -89,308 +72,386 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
-/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 1);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+/***/ (function(module, exports) {
 
-var impl = __webpack_require__(1); // registers the extension on a cytoscape lib ref
-
-
-var register = function register(cytoscape) {
-  if (!cytoscape) {
-    return;
-  } // can't register if cytoscape unspecified
-
-
-  cytoscape('layout', 'dagre', impl); // register with cytoscape.js
-};
-
-if (typeof cytoscape !== 'undefined') {
-  // expose to global cytoscape (i.e. window.cytoscape)
-  register(cytoscape);
-}
-
-module.exports = register;
+module.exports = __WEBPACK_EXTERNAL_MODULE_0__;
 
 /***/ }),
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+"use strict";
 
-var isFunction = function isFunction(o) {
-  return typeof o === 'function';
+
+var LayoutConstants = __webpack_require__(0).layoutBase.LayoutConstants;
+var FDLayoutConstants = __webpack_require__(0).layoutBase.FDLayoutConstants;
+var CoSEConstants = __webpack_require__(0).CoSEConstants;
+var CoSELayout = __webpack_require__(0).CoSELayout;
+var CoSENode = __webpack_require__(0).CoSENode;
+var PointD = __webpack_require__(0).layoutBase.PointD;
+var DimensionD = __webpack_require__(0).layoutBase.DimensionD;
+
+var defaults = {
+  // Called on `layoutready`
+  ready: function ready() {},
+  // Called on `layoutstop`
+  stop: function stop() {},
+  // 'draft', 'default' or 'proof" 
+  // - 'draft' fast cooling rate 
+  // - 'default' moderate cooling rate 
+  // - "proof" slow cooling rate
+  quality: 'default',
+  // include labels in node dimensions
+  nodeDimensionsIncludeLabels: false,
+  // number of ticks per frame; higher is faster but more jerky
+  refresh: 30,
+  // Whether to fit the network view after when done
+  fit: true,
+  // Padding on fit
+  padding: 10,
+  // Whether to enable incremental mode
+  randomize: true,
+  // Node repulsion (non overlapping) multiplier
+  nodeRepulsion: 4500,
+  // Ideal edge (non nested) length
+  idealEdgeLength: 50,
+  // Divisor to compute edge forces
+  edgeElasticity: 0.45,
+  // Nesting factor (multiplier) to compute ideal edge length for nested edges
+  nestingFactor: 0.1,
+  // Gravity force (constant)
+  gravity: 0.25,
+  // Maximum number of iterations to perform
+  numIter: 2500,
+  // For enabling tiling
+  tile: true,
+  // Type of layout animation. The option set is {'during', 'end', false}
+  animate: 'end',
+  // Duration for animate:end
+  animationDuration: 500,
+  // Represents the amount of the vertical space to put between the zero degree members during the tiling operation(can also be a function)
+  tilingPaddingVertical: 10,
+  // Represents the amount of the horizontal space to put between the zero degree members during the tiling operation(can also be a function)
+  tilingPaddingHorizontal: 10,
+  // Gravity range (constant) for compounds
+  gravityRangeCompound: 1.5,
+  // Gravity force (constant) for compounds
+  gravityCompound: 1.0,
+  // Gravity range (constant)
+  gravityRange: 3.8,
+  // Initial cooling factor for incremental layout
+  initialEnergyOnIncremental: 0.5
 };
 
-var defaults = __webpack_require__(2);
+function extend(defaults, options) {
+  var obj = {};
 
-var assign = __webpack_require__(3);
+  for (var i in defaults) {
+    obj[i] = defaults[i];
+  }
 
-var dagre = __webpack_require__(4); // constructor
-// options : object containing layout options
+  for (var i in options) {
+    obj[i] = options[i];
+  }
 
+  return obj;
+};
 
-function DagreLayout(options) {
-  this.options = assign({}, defaults, options);
-} // runs the layout
+function _CoSELayout(_options) {
+  this.options = extend(defaults, _options);
+  getUserOptions(this.options);
+}
 
+var getUserOptions = function getUserOptions(options) {
+  if (options.nodeRepulsion != null) CoSEConstants.DEFAULT_REPULSION_STRENGTH = FDLayoutConstants.DEFAULT_REPULSION_STRENGTH = options.nodeRepulsion;
+  if (options.idealEdgeLength != null) CoSEConstants.DEFAULT_EDGE_LENGTH = FDLayoutConstants.DEFAULT_EDGE_LENGTH = options.idealEdgeLength;
+  if (options.edgeElasticity != null) CoSEConstants.DEFAULT_SPRING_STRENGTH = FDLayoutConstants.DEFAULT_SPRING_STRENGTH = options.edgeElasticity;
+  if (options.nestingFactor != null) CoSEConstants.PER_LEVEL_IDEAL_EDGE_LENGTH_FACTOR = FDLayoutConstants.PER_LEVEL_IDEAL_EDGE_LENGTH_FACTOR = options.nestingFactor;
+  if (options.gravity != null) CoSEConstants.DEFAULT_GRAVITY_STRENGTH = FDLayoutConstants.DEFAULT_GRAVITY_STRENGTH = options.gravity;
+  if (options.numIter != null) CoSEConstants.MAX_ITERATIONS = FDLayoutConstants.MAX_ITERATIONS = options.numIter;
+  if (options.gravityRange != null) CoSEConstants.DEFAULT_GRAVITY_RANGE_FACTOR = FDLayoutConstants.DEFAULT_GRAVITY_RANGE_FACTOR = options.gravityRange;
+  if (options.gravityCompound != null) CoSEConstants.DEFAULT_COMPOUND_GRAVITY_STRENGTH = FDLayoutConstants.DEFAULT_COMPOUND_GRAVITY_STRENGTH = options.gravityCompound;
+  if (options.gravityRangeCompound != null) CoSEConstants.DEFAULT_COMPOUND_GRAVITY_RANGE_FACTOR = FDLayoutConstants.DEFAULT_COMPOUND_GRAVITY_RANGE_FACTOR = options.gravityRangeCompound;
+  if (options.initialEnergyOnIncremental != null) CoSEConstants.DEFAULT_COOLING_FACTOR_INCREMENTAL = FDLayoutConstants.DEFAULT_COOLING_FACTOR_INCREMENTAL = options.initialEnergyOnIncremental;
 
-DagreLayout.prototype.run = function () {
+  if (options.quality == 'draft') LayoutConstants.QUALITY = 0;else if (options.quality == 'proof') LayoutConstants.QUALITY = 2;else LayoutConstants.QUALITY = 1;
+
+  CoSEConstants.NODE_DIMENSIONS_INCLUDE_LABELS = FDLayoutConstants.NODE_DIMENSIONS_INCLUDE_LABELS = LayoutConstants.NODE_DIMENSIONS_INCLUDE_LABELS = options.nodeDimensionsIncludeLabels;
+  CoSEConstants.DEFAULT_INCREMENTAL = FDLayoutConstants.DEFAULT_INCREMENTAL = LayoutConstants.DEFAULT_INCREMENTAL = !options.randomize;
+  CoSEConstants.ANIMATE = FDLayoutConstants.ANIMATE = LayoutConstants.ANIMATE = options.animate;
+  CoSEConstants.TILE = options.tile;
+  CoSEConstants.TILING_PADDING_VERTICAL = typeof options.tilingPaddingVertical === 'function' ? options.tilingPaddingVertical.call() : options.tilingPaddingVertical;
+  CoSEConstants.TILING_PADDING_HORIZONTAL = typeof options.tilingPaddingHorizontal === 'function' ? options.tilingPaddingHorizontal.call() : options.tilingPaddingHorizontal;
+};
+
+_CoSELayout.prototype.run = function () {
+  var ready;
+  var frameId;
   var options = this.options;
-  var layout = this;
-  var cy = options.cy; // cy is automatically populated for us in the constructor
+  var idToLNode = this.idToLNode = {};
+  var layout = this.layout = new CoSELayout();
+  var self = this;
 
-  var eles = options.eles;
+  self.stopped = false;
 
-  var getVal = function getVal(ele, val) {
-    return isFunction(val) ? val.apply(ele, [ele]) : val;
-  };
+  this.cy = this.options.cy;
 
-  var bb = options.boundingBox || {
-    x1: 0,
-    y1: 0,
-    w: cy.width(),
-    h: cy.height()
-  };
+  this.cy.trigger({ type: 'layoutstart', layout: this });
 
-  if (bb.x2 === undefined) {
-    bb.x2 = bb.x1 + bb.w;
-  }
+  var gm = layout.newGraphManager();
+  this.gm = gm;
 
-  if (bb.w === undefined) {
-    bb.w = bb.x2 - bb.x1;
-  }
+  var nodes = this.options.eles.nodes();
+  var edges = this.options.eles.edges();
 
-  if (bb.y2 === undefined) {
-    bb.y2 = bb.y1 + bb.h;
-  }
+  this.root = gm.addRoot();
+  this.processChildrenList(this.root, this.getTopMostNodes(nodes), layout);
 
-  if (bb.h === undefined) {
-    bb.h = bb.y2 - bb.y1;
-  }
-
-  var g = new dagre.graphlib.Graph({
-    multigraph: true,
-    compound: true
-  });
-  var gObj = {};
-
-  var setGObj = function setGObj(name, val) {
-    if (val != null) {
-      gObj[name] = val;
+  for (var i = 0; i < edges.length; i++) {
+    var edge = edges[i];
+    var sourceNode = this.idToLNode[edge.data("source")];
+    var targetNode = this.idToLNode[edge.data("target")];
+    if (sourceNode !== targetNode && sourceNode.getEdgesBetween(targetNode).length == 0) {
+      var e1 = gm.add(layout.newEdge(), sourceNode, targetNode);
+      e1.id = edge.id();
     }
-  };
-
-  setGObj('nodesep', options.nodeSep);
-  setGObj('edgesep', options.edgeSep);
-  setGObj('ranksep', options.rankSep);
-  setGObj('rankdir', options.rankDir);
-  setGObj('align', options.align);
-  setGObj('ranker', options.ranker);
-  setGObj('acyclicer', options.acyclicer);
-  g.setGraph(gObj);
-  g.setDefaultEdgeLabel(function () {
-    return {};
-  });
-  g.setDefaultNodeLabel(function () {
-    return {};
-  }); // add nodes to dagre
-
-  var nodes = eles.nodes();
-
-  if (isFunction(options.sort)) {
-    nodes = nodes.sort(options.sort);
   }
 
-  for (var i = 0; i < nodes.length; i++) {
-    var node = nodes[i];
-    var nbb = node.layoutDimensions(options);
-    g.setNode(node.id(), {
-      width: nbb.w,
-      height: nbb.h,
-      name: node.id()
-    }); // console.log( g.node(node.id()) );
-  } // set compound parents
-
-
-  for (var _i = 0; _i < nodes.length; _i++) {
-    var _node = nodes[_i];
-
-    if (_node.isChild()) {
-      g.setParent(_node.id(), _node.parent().id());
+  var getPositions = function getPositions(ele, i) {
+    if (typeof ele === "number") {
+      ele = i;
     }
-  } // add edges to dagre
+    var theId = ele.data('id');
+    var lNode = self.idToLNode[theId];
 
-
-  var edges = eles.edges().stdFilter(function (edge) {
-    return !edge.source().isParent() && !edge.target().isParent(); // dagre can't handle edges on compound nodes
-  });
-
-  if (isFunction(options.sort)) {
-    edges = edges.sort(options.sort);
-  }
-
-  for (var _i2 = 0; _i2 < edges.length; _i2++) {
-    var edge = edges[_i2];
-    g.setEdge(edge.source().id(), edge.target().id(), {
-      minlen: getVal(edge, options.minLen),
-      weight: getVal(edge, options.edgeWeight),
-      name: edge.id()
-    }, edge.id()); // console.log( g.edge(edge.source().id(), edge.target().id(), edge.id()) );
-  }
-
-  dagre.layout(g);
-  var gNodeIds = g.nodes();
-
-  for (var _i3 = 0; _i3 < gNodeIds.length; _i3++) {
-    var id = gNodeIds[_i3];
-    var n = g.node(id);
-    cy.getElementById(id).scratch().dagre = n;
-  }
-
-  var dagreBB;
-
-  if (options.boundingBox) {
-    dagreBB = {
-      x1: Infinity,
-      x2: -Infinity,
-      y1: Infinity,
-      y2: -Infinity
+    return {
+      x: lNode.getRect().getCenterX(),
+      y: lNode.getRect().getCenterY()
     };
-    nodes.forEach(function (node) {
-      var dModel = node.scratch().dagre;
-      dagreBB.x1 = Math.min(dagreBB.x1, dModel.x);
-      dagreBB.x2 = Math.max(dagreBB.x2, dModel.x);
-      dagreBB.y1 = Math.min(dagreBB.y1, dModel.y);
-      dagreBB.y2 = Math.max(dagreBB.y2, dModel.y);
-    });
-    dagreBB.w = dagreBB.x2 - dagreBB.x1;
-    dagreBB.h = dagreBB.y2 - dagreBB.y1;
-  } else {
-    dagreBB = bb;
-  }
-
-  var constrainPos = function constrainPos(p) {
-    if (options.boundingBox) {
-      var xPct = dagreBB.w === 0 ? 0 : (p.x - dagreBB.x1) / dagreBB.w;
-      var yPct = dagreBB.h === 0 ? 0 : (p.y - dagreBB.y1) / dagreBB.h;
-      return {
-        x: bb.x1 + xPct * bb.w,
-        y: bb.y1 + yPct * bb.h
-      };
-    } else {
-      return p;
-    }
   };
 
-  nodes.layoutPositions(layout, options, function (ele) {
-    ele = _typeof(ele) === "object" ? ele : this;
-    var dModel = ele.scratch().dagre;
-    return constrainPos({
-      x: dModel.x,
-      y: dModel.y
+  /*
+   * Reposition nodes in iterations animatedly
+   */
+  var iterateAnimated = function iterateAnimated() {
+    // Thigs to perform after nodes are repositioned on screen
+    var afterReposition = function afterReposition() {
+      if (options.fit) {
+        options.cy.fit(options.eles, options.padding);
+      }
+
+      if (!ready) {
+        ready = true;
+        self.cy.one('layoutready', options.ready);
+        self.cy.trigger({ type: 'layoutready', layout: self });
+      }
+    };
+
+    var ticksPerFrame = self.options.refresh;
+    var isDone;
+
+    for (var i = 0; i < ticksPerFrame && !isDone; i++) {
+      isDone = self.stopped || self.layout.tick();
+    }
+
+    // If layout is done
+    if (isDone) {
+      // If the layout is not a sublayout and it is successful perform post layout.
+      if (layout.checkLayoutSuccess() && !layout.isSubLayout) {
+        layout.doPostLayout();
+      }
+
+      // If layout has a tilingPostLayout function property call it.
+      if (layout.tilingPostLayout) {
+        layout.tilingPostLayout();
+      }
+
+      layout.isLayoutFinished = true;
+
+      self.options.eles.nodes().positions(getPositions);
+
+      afterReposition();
+
+      // trigger layoutstop when the layout stops (e.g. finishes)
+      self.cy.one('layoutstop', self.options.stop);
+      self.cy.trigger({ type: 'layoutstop', layout: self });
+
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+      }
+
+      ready = false;
+      return;
+    }
+
+    var animationData = self.layout.getPositionsData(); // Get positions of layout nodes note that all nodes may not be layout nodes because of tiling
+
+    // Position nodes, for the nodes whose id does not included in data (because they are removed from their parents and included in dummy compounds)
+    // use position of their ancestors or dummy ancestors
+    options.eles.nodes().positions(function (ele, i) {
+      if (typeof ele === "number") {
+        ele = i;
+      }
+      // If ele is a compound node, then its position will be defined by its children
+      if (!ele.isParent()) {
+        var theId = ele.id();
+        var pNode = animationData[theId];
+        var temp = ele;
+        // If pNode is undefined search until finding position data of its first ancestor (It may be dummy as well)
+        while (pNode == null) {
+          pNode = animationData[temp.data('parent')] || animationData['DummyCompound_' + temp.data('parent')];
+          animationData[theId] = pNode;
+          temp = temp.parent()[0];
+          if (temp == undefined) {
+            break;
+          }
+        }
+        if (pNode != null) {
+          return {
+            x: pNode.x,
+            y: pNode.y
+          };
+        } else {
+          return {
+            x: ele.position('x'),
+            y: ele.position('y')
+          };
+        }
+      }
     });
+
+    afterReposition();
+
+    frameId = requestAnimationFrame(iterateAnimated);
+  };
+
+  /*
+  * Listen 'layoutstarted' event and start animated iteration if animate option is 'during'
+  */
+  layout.addListener('layoutstarted', function () {
+    if (self.options.animate === 'during') {
+      frameId = requestAnimationFrame(iterateAnimated);
+    }
   });
+
+  layout.runLayout(); // Run cose layout
+
+  /*
+   * If animate option is not 'during' ('end' or false) perform these here (If it is 'during' similar things are already performed)
+   */
+  if (this.options.animate !== "during") {
+    self.options.eles.nodes().not(":parent").layoutPositions(self, self.options, getPositions); // Use layout positions to reposition the nodes it considers the options parameter
+    ready = false;
+  }
+
   return this; // chaining
 };
 
-module.exports = DagreLayout;
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-var defaults = {
-  // dagre algo options, uses default value on undefined
-  nodeSep: undefined,
-  // the separation between adjacent nodes in the same rank
-  edgeSep: undefined,
-  // the separation between adjacent edges in the same rank
-  rankSep: undefined,
-  // the separation between adjacent nodes in the same rank
-  rankDir: undefined,
-  // 'TB' for top to bottom flow, 'LR' for left to right,
-  align: undefined,
-  // alignment for rank nodes. Can be 'UL', 'UR', 'DL', or 'DR', where U = up, D = down, L = left, and R = right
-  acyclicer: undefined,
-  // If set to 'greedy', uses a greedy heuristic for finding a feedback arc set for a graph.
-  // A feedback arc set is a set of edges that can be removed to make a graph acyclic.
-  ranker: undefined,
-  // Type of algorithm to assigns a rank to each node in the input graph.
-  // Possible values: network-simplex, tight-tree or longest-path
-  minLen: function minLen(edge) {
-    return 1;
-  },
-  // number of ranks to keep between the source and target of the edge
-  edgeWeight: function edgeWeight(edge) {
-    return 1;
-  },
-  // higher weight edges are generally made shorter and straighter than lower weight edges
-  // general layout options
-  fit: true,
-  // whether to fit to viewport
-  padding: 30,
-  // fit padding
-  spacingFactor: undefined,
-  // Applies a multiplicative factor (>0) to expand or compress the overall area that the nodes take up
-  nodeDimensionsIncludeLabels: false,
-  // whether labels should be included in determining the space used by a node
-  animate: false,
-  // whether to transition the node positions
-  animateFilter: function animateFilter(node, i) {
-    return true;
-  },
-  // whether to animate specific nodes when animation is on; non-animated nodes immediately go to their final positions
-  animationDuration: 500,
-  // duration of animation in ms if enabled
-  animationEasing: undefined,
-  // easing of animation if enabled
-  boundingBox: undefined,
-  // constrain layout bounds; { x1, y1, x2, y2 } or { x1, y1, w, h }
-  transform: function transform(node, pos) {
-    return pos;
-  },
-  // a function that applies a transform to the final node position
-  ready: function ready() {},
-  // on layoutready
-  sort: undefined,
-  // a sorting function to order the nodes and edges; e.g. function(a, b){ return a.data('weight') - b.data('weight') }
-  // because cytoscape dagre creates a directed graph, and directed graphs use the node order as a tie breaker when
-  // defining the topology of a graph, this sort function can help ensure the correct order of the nodes/edges.
-  // this feature is most useful when adding and removing the same nodes and edges multiple times in a graph.
-  stop: function stop() {} // on layoutstop
-
-};
-module.exports = defaults;
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-// Simple, internal Object.assign() polyfill for options objects etc.
-module.exports = Object.assign != null ? Object.assign.bind(Object) : function (tgt) {
-  for (var _len = arguments.length, srcs = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    srcs[_key - 1] = arguments[_key];
+//Get the top most ones of a list of nodes
+_CoSELayout.prototype.getTopMostNodes = function (nodes) {
+  var nodesMap = {};
+  for (var i = 0; i < nodes.length; i++) {
+    nodesMap[nodes[i].id()] = true;
   }
-
-  srcs.forEach(function (src) {
-    Object.keys(src).forEach(function (k) {
-      return tgt[k] = src[k];
-    });
+  var roots = nodes.filter(function (ele, i) {
+    if (typeof ele === "number") {
+      ele = i;
+    }
+    var parent = ele.parent()[0];
+    while (parent != null) {
+      if (nodesMap[parent.id()]) {
+        return false;
+      }
+      parent = parent.parent()[0];
+    }
+    return true;
   });
-  return tgt;
+
+  return roots;
 };
 
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
+_CoSELayout.prototype.processChildrenList = function (parent, children, layout) {
+  var size = children.length;
+  for (var i = 0; i < size; i++) {
+    var theChild = children[i];
+    var children_of_children = theChild.children();
+    var theNode;
 
-module.exports = __WEBPACK_EXTERNAL_MODULE__4__;
+    var dimensions = theChild.layoutDimensions({
+      nodeDimensionsIncludeLabels: this.options.nodeDimensionsIncludeLabels
+    });
+
+    if (theChild.outerWidth() != null && theChild.outerHeight() != null) {
+      theNode = parent.add(new CoSENode(layout.graphManager, new PointD(theChild.position('x') - dimensions.w / 2, theChild.position('y') - dimensions.h / 2), new DimensionD(parseFloat(dimensions.w), parseFloat(dimensions.h))));
+    } else {
+      theNode = parent.add(new CoSENode(this.graphManager));
+    }
+    // Attach id to the layout node
+    theNode.id = theChild.data("id");
+    // Attach the paddings of cy node to layout node
+    theNode.paddingLeft = parseInt(theChild.css('padding'));
+    theNode.paddingTop = parseInt(theChild.css('padding'));
+    theNode.paddingRight = parseInt(theChild.css('padding'));
+    theNode.paddingBottom = parseInt(theChild.css('padding'));
+
+    //Attach the label properties to compound if labels will be included in node dimensions  
+    if (this.options.nodeDimensionsIncludeLabels) {
+      if (theChild.isParent()) {
+        var labelWidth = theChild.boundingBox({ includeLabels: true, includeNodes: false }).w;
+        var labelHeight = theChild.boundingBox({ includeLabels: true, includeNodes: false }).h;
+        var labelPos = theChild.css("text-halign");
+        theNode.labelWidth = labelWidth;
+        theNode.labelHeight = labelHeight;
+        theNode.labelPos = labelPos;
+      }
+    }
+
+    // Map the layout node
+    this.idToLNode[theChild.data("id")] = theNode;
+
+    if (isNaN(theNode.rect.x)) {
+      theNode.rect.x = 0;
+    }
+
+    if (isNaN(theNode.rect.y)) {
+      theNode.rect.y = 0;
+    }
+
+    if (children_of_children != null && children_of_children.length > 0) {
+      var theNewGraph;
+      theNewGraph = layout.getGraphManager().add(layout.newGraph(), theNode);
+      this.processChildrenList(theNewGraph, children_of_children, layout);
+    }
+  }
+};
+
+/**
+ * @brief : called on continuous layouts to stop them before they finish
+ */
+_CoSELayout.prototype.stop = function () {
+  this.stopped = true;
+
+  return this; // chaining
+};
+
+var register = function register(cytoscape) {
+  //  var Layout = getLayout( cytoscape );
+
+  cytoscape('layout', 'cose-bilkent', _CoSELayout);
+};
+
+// auto reg for globals
+if (typeof cytoscape !== 'undefined') {
+  register(cytoscape);
+}
+
+module.exports = register;
 
 /***/ })
 /******/ ]);
